@@ -1,5 +1,6 @@
 package io.github.mayconfrr.fraud;
 
+import io.github.mayconfrr.clients.fraud.FraudCheckResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
