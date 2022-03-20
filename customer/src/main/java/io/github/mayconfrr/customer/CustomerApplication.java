@@ -5,7 +5,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
+@SpringBootApplication(
+        scanBasePackages = {
+                "io.github.mayconfrr.customer",
+                "io.github.mayconfrr.amqp"
+        }
+)
 @EnableEurekaClient
 @EnableFeignClients(basePackages = "io.github.mayconfrr.clients")
 public class CustomerApplication {
