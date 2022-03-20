@@ -1,8 +1,8 @@
 package io.github.mayconfrr.customer;
 
+import io.github.mayconfrr.amqp.RabbitMQMessageProducer;
 import io.github.mayconfrr.clients.fraud.FraudCheckResponse;
 import io.github.mayconfrr.clients.fraud.FraudClient;
-import io.github.mayconfrr.clients.notification.NotificationClient;
 import io.github.mayconfrr.clients.notification.NotificationRequest;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.text.MessageFormat;
 @Service
 public record CustomerService(CustomerRepository customerRepository,
                               FraudClient fraudClient,
-                              NotificationClient notificationClient) {
+                              RabbitMQMessageProducer messageProducer) {
 
     public void registerCustomer(CustomerRegistrationRequest request) {
         Customer customer = Customer.builder()
@@ -30,13 +30,16 @@ public record CustomerService(CustomerRepository customerRepository,
             throw new CustomerFraudsterException("Customer " + customer.getFirstname() + " " + customer.getLastname() + " is fraudulent");
         }
 
-        // @TODO: make it async (add to queue)
-        notificationClient.sendNotification(
-                new NotificationRequest(
-                        MessageFormat.format("Welcome, {0}!", customer.getFirstname()),
-                        customer.getEmail(),
-                        customer.getId()
-                )
+        NotificationRequest notificationRequest = new NotificationRequest(
+                MessageFormat.format("Welcome, {0}!", customer.getFirstname()),
+                customer.getEmail(),
+                customer.getId()
+        );
+
+        messageProducer.publish(
+                notificationRequest,
+                "internal.exchange",
+                "internal.notification.routing-key"
         );
     }
 }
